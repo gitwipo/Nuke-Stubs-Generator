@@ -19,3 +19,7 @@ nukeStubs.generate('your/output/directory')
 
 Simply add your stubs folder to your IDE's pythonpath so that it can index this stubs file.
 
+
+# Authors
+
+This script was written by Dhruv Govil, loosely based on the work done by Sebastien Elsner (http://www.nukepedia.com/python/misc/nukepydummy).
