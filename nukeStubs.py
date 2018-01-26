@@ -1,7 +1,7 @@
 import inspect
 import re
 import os
-import nuke
+import importlib
 
 
 import logging
@@ -9,6 +9,7 @@ logging.basicConfig()
 logger = logging.getLogger('NukeStubsGenerator')
 logger.setLevel(logging.INFO)
 
+SOURCE_TO_STUBS=['nuke','nukescripts']
 
 class NukeStubsGenerator(object):
     """
@@ -19,9 +20,11 @@ class NukeStubsGenerator(object):
 
     default_directory = os.path.join(os.path.expanduser('~'), 'stubs')
 
-    def __init__(self, directory=None):
+    def __init__(self, directory=None,source_module = 'nuke'):
         self._indent = 0
         self.contents = ''
+
+        self.source_module = importlib.import_module(source_module)
 
         # Generate the stubs string
         self.generate()
@@ -40,7 +43,7 @@ class NukeStubsGenerator(object):
             logger.info('Creating directory %s', self.directory)
             os.mkdir(self.directory)
 
-        self.output_file = os.path.join(self.directory, 'nuke.py')
+        self.output_file = os.path.join(self.directory, '%s.py' % self.source_module.__name__)
 
         # Save the file
         self.save()
@@ -180,11 +183,12 @@ class NukeStubsGenerator(object):
 
 
     def generate(self):
-        """Generates the docstring content for the nuke module"""
-        for name in dir(nuke):
+        """Generates the docstring content for the source module"""
+       
+        for name in dir(self.source_module):
             if name.startswith('__'):
                 continue
-            obj = getattr(nuke, name, None)
+            obj = getattr(self.source_module, name, None)
             if not obj:
                 logger.info('Failed to resolve %s', name)
             elif inspect.isclass(obj):
@@ -199,13 +203,14 @@ class NukeStubsGenerator(object):
 
         logger.info('Wrote to %s', self.output_file)
 
-def generate(directory=None):
+def generate(directory=None,module_list=SOURCE_TO_STUBS):
     """Convenience method for generating the stubs.
     @param directory: the directory to write to. Defaults to a stubs folder in your user dir.
     @return the stubs object
     """
-    stubs = NukeStubsGenerator(directory)
-    return stubs
+    
+    for source_name in module_list:
+        stubs = NukeStubsGenerator(directory,source_name)
 
 if __name__ == '__main__':
     print generate()
