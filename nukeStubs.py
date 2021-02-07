@@ -41,14 +41,16 @@ class NukeStubsGenerator(object):
         if not os.path.exists(self.directory):
             if directory:
                 raise IOError(
-                    "Directory %s does not exist. Cannot write." % (self.directory)
+                    "Directory {0} does not exist. Cannot write.".format(
+                        (self.directory)
+                    )
                 )
 
-            logger.info("Creating directory %s", self.directory)
+            logger.info("Creating directory {0}".format(self.directory))
             os.mkdir(self.directory)
 
         self.output_file = os.path.join(
-            self.directory, "%s.py" % self.source_module.__name__
+            self.directory, "{0}.py".format(self.source_module.__name__)
         )
 
         # Save the file
@@ -68,7 +70,7 @@ class NukeStubsGenerator(object):
         lines = text.split("\n")
         for line in lines:
             line = line.strip()
-            line = "%s%s\n" % (self._indent * " ", line)
+            line = "{0}{1}\n".format(self._indent * " ", line)
             self.contents += line
 
     def indent(self):
@@ -136,7 +138,7 @@ class NukeStubsGenerator(object):
             try:
                 spec = inspect.getargspec(func)
             except:
-                logger.info("Failed to resolve %s", func)
+                logger.info("Failed to resolve {0}".format(func))
                 return
 
             name = func.__name__
@@ -150,13 +152,13 @@ class NukeStubsGenerator(object):
 
         # Replace kwargs with their appropriate defaults
         for kw, val in zip(args[-len(defaults) :], defaults):
-            args[args.index(kw)] = "%s=%s" % (kw, val)
+            args[args.index(kw)] = "{0}={1}".format(kw, val)
 
         # Finally write the declaration of the function
-        signature = "\ndef %s(%s):" % (name, ", ".join(args))
+        signature = "\ndef {0}({1}):".format(name, ", ".join(args))
         self.write(signature)
         self.indent()
-        doc = '"""%s"""' % func.__doc__
+        doc = '"""{0}"""'.format(func.__doc__)
         self.write(doc)
         self.write("pass\n")
         self.dedent()
@@ -168,16 +170,16 @@ class NukeStubsGenerator(object):
 
         base = inspect.getclasstree([cls])[0][0].__name__
 
-        signature = "\nclass %s(%s):" % (cls.__name__, base)
+        signature = "\nclass {0}({1}):".format(cls.__name__, base)
         self.write(signature)
         self.indent()
-        doc = '"""%s"""' % cls.__doc__
+        doc = '"""{0}"""'.format(cls.__doc__)
         self.write(doc)
         for member_name, member in cls.__dict__.items():
             if member_name.startswith("__"):
                 continue
             if not member:
-                logger.info("Failed to resolve %s", member_name)
+                logger.info("Failed to resolve {0}".format(member_name))
             else:
                 self.get_info(member)
 
@@ -191,7 +193,7 @@ class NukeStubsGenerator(object):
                 continue
             obj = getattr(self.source_module, name, None)
             if not obj:
-                logger.info("Failed to resolve %s", name)
+                logger.info("Failed to resolve {0}".format(name))
             elif inspect.isclass(obj):
                 self.get_class_info(obj)
             else:
@@ -202,7 +204,7 @@ class NukeStubsGenerator(object):
         with open(self.output_file, "w") as f:
             f.write(self.contents)
 
-        logger.info("Wrote to %s", self.output_file)
+        logger.info("Wrote to {0}".format(self.output_file))
 
 
 def generate(directory=None, module_list=SOURCE_TO_STUBS):
@@ -212,8 +214,8 @@ def generate(directory=None, module_list=SOURCE_TO_STUBS):
     """
 
     for source_name in module_list:
-        stubs = NukeStubsGenerator(directory, source_name)
+        NukeStubsGenerator(directory, source_name)
 
 
 if __name__ == "__main__":
-    print generate()
+    print(generate())
